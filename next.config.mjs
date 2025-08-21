@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  swcMinify: false,
   experimental: {
     /**
      * Critical: prevents "ESM packages (pdfjs-dist/build/pdf.worker.min.mjs) need to be imported." error
@@ -25,10 +24,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  /**
-   * Critical: Use Babel instead of SWC for transpilation
-   */
-  transpilePackages: [],
   webpack: (config) => {
     /**
      * Critical: prevents " ⨯ ./node_modules/canvas/build/Release/canvas.node
