@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { ToastProvider } from '@/shared/ui/Toast'
+import { AuthProvider } from '@/shared/auth/AuthContext'
+import { QueryProvider } from '@/shared/providers/QueryProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -18,9 +20,13 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
-        <ToastProvider>
-          {children}
-        </ToastProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <ToastProvider>
+              {children}
+            </ToastProvider>
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   )

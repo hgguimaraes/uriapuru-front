@@ -4,69 +4,30 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Contract } from '@/entities/types';
-import { getContracts } from '@/features/contracts/api/contracts.api';
+import { useState } from 'react';
 import { ContractsTable } from '@/features/contracts/components/ContractsTable';
+import { CreateContractModal } from '@/features/contracts/components/CreateContractModal';
 import { Button } from '@/shared/ui/Button';
-import { useToast } from '@/shared/ui/Toast';
-import { HttpError } from '@/shared/lib/http';
+import { useContracts } from '@/shared/hooks/useContracts';
+import { useAuth } from '@/shared/auth/AuthContext';
+import { Contract } from '@/entities/types';
 
 export default function ContractsPage() {
-  const [contracts, setContracts] = useState<Contract[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [userRole] = useState<string>('ADMIN'); // TODO: Get from auth context
-  const { addToast } = useToast();
-
-  useEffect(() => {
-    loadContracts();
-  }, []);
-
-  const loadContracts = async () => {
-    try {
-      setLoading(true);
-      const response = await getContracts();
-      setContracts(response.data);
-    } catch (error) {
-      console.error('Error loading contracts:', error);
-      if (error instanceof HttpError) {
-        addToast({
-          type: 'error',
-          title: 'Erro ao carregar contratos',
-          description: error.message,
-          requestId: error.requestId,
-        });
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { user, hasPermission } = useAuth();
+  const { data, isLoading } = useContracts();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const handleEditContract = (contract: Contract) => {
-    addToast({
-      type: 'info',
-      title: 'Funcionalidade em desenvolvimento',
-      description: `Editando contrato ${contract.contract_number}`,
-    });
+    console.log('Edit contract:', contract.id);
+    // TODO: Implement edit modal
   };
 
   const handleDeleteContract = (contract: Contract) => {
-    addToast({
-      type: 'warning',
-      title: 'Confirmar exclusão',
-      description: `Deseja realmente excluir o contrato ${contract.contract_number}?`,
-    });
+    console.log('Delete contract:', contract.id);
+    // TODO: Implement delete confirmation
   };
 
-  const handleNewContract = () => {
-    addToast({
-      type: 'info',
-      title: 'Funcionalidade em desenvolvimento',
-      description: 'Modal de criação de contrato será implementado',
-    });
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white p-8 rounded-lg shadow-md">
@@ -76,6 +37,9 @@ export default function ContractsPage() {
       </div>
     );
   }
+
+  const contracts = data?.contracts || [];
+  const canManageContracts = hasPermission('contracts', 'write');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -91,8 +55,8 @@ export default function ContractsPage() {
                 Gerencie todos os contratos de energia solar
               </p>
             </div>
-            {userRole === 'ADMIN' && (
-              <Button onClick={handleNewContract}>
+            {canManageContracts && (
+              <Button onClick={() => setIsCreateModalOpen(true)}>
                 Novo Contrato
               </Button>
             )}
@@ -155,7 +119,13 @@ export default function ContractsPage() {
           contracts={contracts}
           onEditContract={handleEditContract}
           onDeleteContract={handleDeleteContract}
-          userRole={userRole}
+          userRole={user?.role}
+        />
+
+        {/* Create Contract Modal */}
+        <CreateContractModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
         />
       </div>
     </div>
